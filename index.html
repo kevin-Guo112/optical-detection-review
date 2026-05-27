@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>光电检测技术期末复习</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="复习导航">
+      <div class="brand">
+        <div class="brand-mark">OD</div>
+        <div>
+          <h1>光电检测技术</h1>
+          <p>期末复习与题库</p>
+        </div>
+      </div>
+
+      <nav class="tabs" aria-label="主视图">
+        <button class="tab-button active" type="button" data-view="overview">知识点</button>
+        <button class="tab-button" type="button" data-view="practice">练习</button>
+        <button class="tab-button" type="button" data-view="mistakes">错题</button>
+      </nav>
+
+      <section class="filters" aria-label="筛选">
+        <label for="chapterFilter">章节</label>
+        <select id="chapterFilter"></select>
+        <label for="typeFilter">题型</label>
+        <select id="typeFilter"></select>
+      </section>
+
+      <section class="stats-panel" aria-label="答题统计">
+        <div>
+          <span id="statTotal">0</span>
+          <small>总题数</small>
+        </div>
+        <div>
+          <span id="statDone">0</span>
+          <small>已答</small>
+        </div>
+        <div>
+          <span id="statAccuracy">0%</span>
+          <small>正确率</small>
+        </div>
+        <div>
+          <span id="statMistakes">0</span>
+          <small>错题</small>
+        </div>
+      </section>
+
+      <div class="sidebar-actions">
+        <button class="ghost-button" type="button" id="resetProgressButton">重置进度</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <section class="topbar" aria-label="课程信息">
+        <div>
+          <p class="eyebrow">交互复习网页</p>
+          <h2 id="pageTitle">光电检测技术期末复习</h2>
+          <p id="sourceText" class="source-text"></p>
+        </div>
+        <div class="quick-actions">
+          <button class="icon-button" type="button" id="shuffleButton" title="随机一题" aria-label="随机一题">↻</button>
+          <button class="primary-button" type="button" id="startPracticeButton">开始练习</button>
+        </div>
+      </section>
+
+      <section id="overviewView" class="view active" aria-label="章节知识点">
+        <div class="section-header">
+          <div>
+            <h3>章节核心内容</h3>
+            <p>按章节列出核心概念、公式/数值关系和理论框架。</p>
+          </div>
+          <div class="count-pill" id="chapterCount"></div>
+        </div>
+        <div id="chapterGrid" class="chapter-grid"></div>
+      </section>
+
+      <section id="practiceView" class="view" aria-label="交互练习">
+        <div class="practice-layout">
+          <section class="question-panel" aria-live="polite">
+            <div class="question-meta">
+              <span id="questionType"></span>
+              <span id="questionChapter"></span>
+              <span id="questionProgress"></span>
+            </div>
+            <h3 id="questionPrompt"></h3>
+            <div id="answerArea" class="answer-area"></div>
+            <div id="feedback" class="feedback" hidden></div>
+            <div class="practice-actions">
+              <button class="ghost-button" type="button" id="prevButton">上一题</button>
+              <button class="primary-button" type="button" id="checkButton">提交/查看答案</button>
+              <button class="ghost-button" type="button" id="nextButton">下一题</button>
+            </div>
+          </section>
+
+          <aside class="question-list-panel" aria-label="题目列表">
+            <div class="list-header">
+              <h3>题目</h3>
+              <span id="filteredCount"></span>
+            </div>
+            <div id="questionList" class="question-list"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="mistakesView" class="view" aria-label="错题复习">
+        <div class="section-header">
+          <div>
+            <h3>错题回看</h3>
+            <p>错题保存在当前浏览器本地，可随时清空重练。</p>
+          </div>
+          <button class="ghost-button" type="button" id="clearMistakesButton">清空错题</button>
+        </div>
+        <div id="mistakeList" class="mistake-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
