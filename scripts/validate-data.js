@@ -16,21 +16,28 @@ if (!fs.existsSync(dataPath)) {
 }
 
 const source = fs.readFileSync(dataPath, "utf8");
+const enrichmentPath = path.join(root, "site", "ppt-enrichment.js");
 const sandbox = {};
 vm.createContext(sandbox);
 vm.runInContext(`${source}\nthis.COURSE_DATA = COURSE_DATA;`, sandbox, { filename: dataPath });
+if (fs.existsSync(enrichmentPath)) {
+  vm.runInContext(fs.readFileSync(enrichmentPath, "utf8"), sandbox, { filename: enrichmentPath });
+}
 
 const data = sandbox.COURSE_DATA;
 if (!data || typeof data !== "object") fail("COURSE_DATA must be an object.");
 if (!Array.isArray(data.chapters) || data.chapters.length !== 8) fail("Expected exactly 8 chapters.");
-if (!Array.isArray(data.questions) || data.questions.length < 70) fail("Expected at least 70 questions.");
+if (!Array.isArray(data.questions) || data.questions.length < 96) fail("Expected at least 96 questions after PPT enrichment.");
+if (!Array.isArray(data.pageCards) || data.pageCards.length !== 68) fail("Expected exactly 68 PPT page coverage cards.");
+if (!Array.isArray(data.chapterSupplements) || data.chapterSupplements.length !== 8) fail("Expected chapter-level PPT supplements.");
+if (!data.calculationGuide || data.calculationGuide.likely !== true) fail("Expected calculation guide with likely=true.");
 
 const chapterIds = new Set((data.chapters || []).map((chapter) => chapter.id));
 const typeMinimums = {
   single: 20,
   multiple: 16,
   blank: 20,
-  short: 12,
+  short: 20,
   experiment: 8,
 };
 const typeCounts = {};
@@ -41,6 +48,12 @@ for (const chapter of data.chapters || []) {
   if (!Array.isArray(chapter.coreConcepts) || chapter.coreConcepts.length < 3) fail(`${chapter.id} needs core concepts.`);
   if (!Array.isArray(chapter.formulas) || chapter.formulas.length < 1) fail(`${chapter.id} needs formulas or numeric relations.`);
   if (!Array.isArray(chapter.framework) || chapter.framework.length < 2) fail(`${chapter.id} needs theory framework.`);
+  if (!Array.isArray(chapter.pptKeyPoints) || chapter.pptKeyPoints.length < 1) fail(`${chapter.id} needs PPT key points.`);
+}
+
+for (const card of data.pageCards || []) {
+  if (!chapterIds.has(card.chapterId)) fail(`Page card ${card.page} references unknown chapter ${card.chapterId}.`);
+  if (!card.page || !card.title || !Array.isArray(card.points) || card.points.length < 1) fail(`Invalid page card ${card.page}.`);
 }
 
 for (const question of data.questions || []) {
@@ -69,6 +82,9 @@ for (const question of data.questions || []) {
     if (!question.answer || !Array.isArray(question.rubric) || question.rubric.length < 2) fail(`${question.id} needs model answer and rubric.`);
   }
 }
+
+const calculationCount = (data.questions || []).filter((question) => question.subtype === "计算/公式应用").length;
+if (calculationCount < 8) fail(`Expected at least 8 calculation/application questions, got ${calculationCount}.`);
 
 for (const [type, minimum] of Object.entries(typeMinimums)) {
   if ((typeCounts[type] || 0) < minimum) fail(`Expected at least ${minimum} questions for type ${type}, got ${typeCounts[type] || 0}.`);
