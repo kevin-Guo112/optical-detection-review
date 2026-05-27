@@ -336,6 +336,126 @@ button {
   font-weight: 700;
 }
 
+.ppt-supplement {
+  display: grid;
+  gap: 10px;
+}
+
+.ppt-point {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f9fbfd;
+}
+
+.ppt-point strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.calculation-guide {
+  margin: 18px 0;
+}
+
+.calc-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid #c8d7ee;
+  border-radius: 8px;
+  background: #f5f9ff;
+  box-shadow: var(--shadow);
+}
+
+.calc-panel h3 {
+  margin: 8px 0;
+}
+
+.calc-panel p,
+.exam-hint {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.calc-panel ul {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+.page-coverage-header {
+  margin-top: 22px;
+}
+
+.page-coverage {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.page-card {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.page-card-top {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.page-number {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 34px;
+  border-radius: 8px;
+  background: #17202a;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.page-card h4 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.page-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.keyword-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.keyword-row span {
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--chip);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.page-card ul {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  line-height: 1.55;
+}
+
 .practice-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
@@ -609,7 +729,12 @@ button {
   }
 
   .chapter-grid,
+  .page-coverage,
   .stats-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .calc-panel {
     grid-template-columns: 1fr;
   }
 
