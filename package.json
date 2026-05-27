@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build:ppt": "node scripts/build-ppt-enrichment.js",
     "validate": "node scripts/validate-data.js",
     "smoke": "node scripts/smoke-test.js",
     "serve": "node scripts/serve.js"
