@@ -5,6 +5,7 @@ const vm = require("vm");
 const root = path.resolve(__dirname, "..");
 const site = path.join(root, "site");
 const requiredFiles = ["index.html", "styles.css", "data.js", "app.js"];
+requiredFiles.push("ppt-enrichment.js");
 const requiredSelectors = [
   'id="chapterFilter"',
   'id="typeFilter"',
@@ -13,7 +14,9 @@ const requiredSelectors = [
   'id="mistakesView"',
   'id="questionPrompt"',
   'id="answerArea"',
-  'id="questionList"'
+  'id="questionList"',
+  'id="pageCoverage"',
+  'id="calculationGuide"'
 ];
 
 function assert(condition, message) {
@@ -32,16 +35,20 @@ for (const marker of requiredSelectors) {
   assert(html.includes(marker), `Missing HTML marker ${marker}`);
 }
 assert(html.includes('<script src="data.js"></script>'), "index.html must load data.js");
+assert(html.includes('<script src="ppt-enrichment.js"></script>'), "index.html must load ppt-enrichment.js");
 assert(html.includes('<script src="app.js"></script>'), "index.html must load app.js");
 
 const dataSource = fs.readFileSync(path.join(site, "data.js"), "utf8");
 const sandbox = {};
 vm.createContext(sandbox);
 vm.runInContext(`${dataSource}\nthis.COURSE_DATA = COURSE_DATA;`, sandbox, { filename: "data.js" });
+vm.runInContext(fs.readFileSync(path.join(site, "ppt-enrichment.js"), "utf8"), sandbox, { filename: "ppt-enrichment.js" });
 assert(sandbox.COURSE_DATA.title.includes("光电检测"), "COURSE_DATA title is unexpected.");
 assert(sandbox.COURSE_DATA.questions.some((question) => question.type === "experiment"), "No experiment questions found.");
+assert(sandbox.COURSE_DATA.pageCards.length === 68, "Expected 68 page coverage cards.");
+assert(sandbox.COURSE_DATA.questions.some((question) => question.subtype === "计算/公式应用"), "No calculation/application questions found.");
 
-for (const file of ["data.js", "app.js"]) {
+for (const file of ["data.js", "ppt-enrichment.js", "app.js"]) {
   new vm.Script(fs.readFileSync(path.join(site, file), "utf8"), { filename: file });
 }
 
