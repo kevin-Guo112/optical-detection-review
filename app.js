@@ -30,7 +30,10 @@ function getChapter(id) {
 function filteredQuestions() {
   return COURSE_DATA.questions.filter((question) => {
     const chapterMatch = state.chapterId === "all" || question.chapterId === state.chapterId;
-    const typeMatch = state.type === "all" || question.type === state.type;
+    const typeMatch =
+      state.type === "all" ||
+      question.type === state.type ||
+      (state.type === "calculation" && question.subtype === "计算/公式应用");
     return chapterMatch && typeMatch;
   });
 }
@@ -54,7 +57,8 @@ function initFilters() {
   const typeFilter = $("#typeFilter");
   typeFilter.innerHTML = [
     `<option value="all">全部题型</option>`,
-    ...Object.entries(COURSE_DATA.typeLabels).map(([value, label]) => `<option value="${value}">${label}</option>`)
+    ...Object.entries(COURSE_DATA.typeLabels).map(([value, label]) => `<option value="${value}">${label}</option>`),
+    `<option value="calculation">计算/公式应用（解答题）</option>`
   ].join("");
 
   chapterFilter.addEventListener("change", () => {
@@ -111,6 +115,56 @@ function renderOverview() {
           <ul>${chapter.pitfalls.map((item) => `<li>${item}</li>`).join("")}</ul>
         </div>
       </details>
+      <details>
+        <summary>PPT 逐页补充</summary>
+        <div class="detail-body ppt-supplement">
+          ${(chapter.pptKeyPoints || []).map((item) => `
+            <div class="ppt-point">
+              <strong>P${String(item.page).padStart(2, "0")} ${item.title}</strong>
+              <ul>${item.points.map((point) => `<li>${point}</li>`).join("")}</ul>
+            </div>
+          `).join("")}
+        </div>
+      </details>
+    </article>
+  `).join("");
+  renderCalculationGuide();
+  renderPageCoverage();
+}
+
+function renderCalculationGuide() {
+  const guide = COURSE_DATA.calculationGuide;
+  if (!guide) {
+    $("#calculationGuide").innerHTML = "";
+    return;
+  }
+  $("#calculationGuide").innerHTML = `
+    <section class="calc-panel">
+      <div>
+        <span class="tag">计算/公式应用</span>
+        <h3>考试会不会出计算题？</h3>
+        <p>${guide.conclusion}</p>
+      </div>
+      <ul>${guide.sources.map((item) => `<li>${item}</li>`).join("")}</ul>
+    </section>
+  `;
+}
+
+function renderPageCoverage() {
+  const cards = (COURSE_DATA.pageCards || []).filter((card) => state.chapterId === "all" || card.chapterId === state.chapterId);
+  $("#pageCardCount").textContent = `${cards.length} / ${(COURSE_DATA.pageCards || []).length} 页`;
+  $("#pageCoverage").innerHTML = cards.map((card) => `
+    <article class="page-card">
+      <div class="page-card-top">
+        <span class="page-number">P${String(card.page).padStart(2, "0")}</span>
+        <div>
+          <h4>${card.title}</h4>
+          <p>${getChapter(card.chapterId).title}</p>
+        </div>
+      </div>
+      <div class="keyword-row">${card.keywords.map((keyword) => `<span>${keyword}</span>`).join("")}</div>
+      <ul>${card.points.map((point) => `<li>${point}</li>`).join("")}</ul>
+      <p class="exam-hint">${card.examHint}</p>
     </article>
   `).join("");
 }
@@ -211,7 +265,7 @@ function renderQuestionList() {
     const dotClass = saved ? (saved.correct ? "correct" : "incorrect") : "";
     return `
       <button type="button" class="${index === state.currentIndex ? "active" : ""}" data-index="${index}">
-        <small>${COURSE_DATA.typeLabels[question.type]}</small>
+        <small>${question.subtype || COURSE_DATA.typeLabels[question.type]}</small>
         <span>${question.prompt}</span>
         <i class="status-dot ${dotClass}" aria-hidden="true"></i>
       </button>
@@ -242,6 +296,7 @@ function renderQuestion() {
   }
 
   $("#questionType").textContent = COURSE_DATA.typeLabels[question.type];
+  if (question.subtype) $("#questionType").textContent = question.subtype;
   $("#questionChapter").textContent = getChapter(question.chapterId).title;
   $("#questionProgress").textContent = `${state.currentIndex + 1} / ${questions.length}`;
   $("#questionPrompt").textContent = question.prompt;
@@ -358,7 +413,7 @@ function renderMistakes() {
   $("#mistakeList").innerHTML = mistakes.map((question) => `
     <article class="mistake-card">
       <div class="question-meta">
-        <span>${COURSE_DATA.typeLabels[question.type]}</span>
+        <span>${question.subtype || COURSE_DATA.typeLabels[question.type]}</span>
         <span>${getChapter(question.chapterId).title}</span>
       </div>
       <h4>${question.prompt}</h4>
