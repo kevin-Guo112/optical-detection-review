@@ -199,6 +199,94 @@ const calculationQuestions = [
   }
 ];
 
+const typeCycle = ["single", "multiple", "blank", "short"];
+const optionDistractors = {
+  c1: ["光源谐振腔", "光电倍增极", "莫尔条纹宽度"],
+  c2: ["CCD 势阱", "光电池负载", "激光多普勒频移"],
+  c3: ["荧光粉激发", "光敏电阻暗电流", "莫尔轮廓等高线"],
+  c4: ["He-Ne 混合气体", "光栅衍射级次", "光电倍增管倍增极"],
+  c5: ["LED 正向偏置", "计量光栅条纹", "飞行时间测距"],
+  c6: ["气体镇流器", "DFB 周期光栅", "光电池短路状态"],
+  c7: ["PN 结复合", "CCD 暗流", "脉冲回波时间"],
+  c8: ["荧光灯紫外激发", "热辐射连续谱", "光敏电阻渡越时间"]
+};
+
+function answerSnippet(card) {
+  return card.points.slice(0, 3).join("；");
+}
+
+function firstKeyword(card) {
+  return card.keywords[0] || chapterFor(card.page).tag;
+}
+
+function pageQuestion(card) {
+  const kind = typeCycle[(card.page - 1) % typeCycle.length];
+  const base = {
+    id: `ppt-p${String(card.page).padStart(2, "0")}`,
+    chapterId: card.chapterId,
+    sourcePage: card.page,
+    sourceType: "ppt",
+    coverageTags: [...new Set([firstKeyword(card), ...card.keywords])],
+    explanation: `来自 PPT 第 ${card.page} 页：${card.examHint}`
+  };
+  const key = firstKeyword(card);
+  const snippet = answerSnippet(card);
+
+  if (kind === "single") {
+    const distractors = optionDistractors[card.chapterId] || optionDistractors.c1;
+    return {
+      ...base,
+      type: "single",
+      prompt: `PPT 第 ${card.page} 页“${card.title}”主要考查的内容是？`,
+      options: [snippet, distractors[0], distractors[1], distractors[2]],
+      answer: [0]
+    };
+  }
+
+  if (kind === "multiple") {
+    const distractors = optionDistractors[card.chapterId] || optionDistractors.c1;
+    const points = card.points.slice(0, 3);
+    return {
+      ...base,
+      type: "multiple",
+      prompt: `关于 PPT 第 ${card.page} 页“${card.title}”，下列说法正确的是？`,
+      options: [points[0] || key, points[1] || snippet, points[2] || card.examHint, distractors[0]],
+      answer: points.length >= 3 ? [0, 1, 2] : [0, 1]
+    };
+  }
+
+  if (kind === "blank") {
+    return {
+      ...base,
+      type: "blank",
+      prompt: `PPT 第 ${card.page} 页“${card.title}”的核心要点包括：____。`,
+      answer: [snippet],
+      explanation: `${base.explanation} 填空题按考试规范要求完整写出本页核心要点。`
+    };
+  }
+
+  return {
+    ...base,
+    type: "short",
+    prompt: `结合 PPT 第 ${card.page} 页“${card.title}”，简述该页知识点及其考试关注点。`,
+    answer: `${snippet}。考试关注点：${card.examHint}`,
+    rubric: ["写出本页核心概念", "能展开至少两个具体要点", "能联系考试提示或应用场景"]
+  };
+}
+
+const pageCoverageQuestions = pageCards.map(pageQuestion);
+
+function enrichQuestion(question) {
+  if (question.coverageTags && question.coverageTags.length) return question;
+  const card = question.sourcePage ? pageCards.find((item) => item.page === question.sourcePage) : null;
+  const chapter = ranges.find((range) => range.chapterId === question.chapterId);
+  return {
+    ...question,
+    sourceType: question.sourceType || "curated",
+    coverageTags: card ? card.keywords : [chapter ? chapter.tag : question.chapterId]
+  };
+}
+
 const calculationGuide = {
   conclusion: "建议保留计算/公式应用题。虽然你给出的考试题型没有单独列“计算题”，但 PPT 中有多处明确公式和数值关系，老师很容易把它们放进填空、单选、解答题或实验数据处理里。",
   likely: true,
@@ -212,8 +300,15 @@ const calculationGuide = {
   ]
 };
 
+const allGeneratedQuestions = [...calculationQuestions, ...pageCoverageQuestions].map(enrichQuestion);
+
 const output = `// Generated from ${sourcePath.replace(/\\/g, "\\\\")}\n` +
 `COURSE_DATA.source = "以课程 PPT PDF 逐页文本为主整理；共 ${pageCards.length} 页，补充逐页覆盖卡和公式应用题。";\n` +
+`COURSE_DATA.questions = COURSE_DATA.questions.map((question) => ({\n` +
+`  ...question,\n` +
+`  sourceType: question.sourceType || "curated",\n` +
+`  coverageTags: question.coverageTags || [COURSE_DATA.chapters.find((chapter) => chapter.id === question.chapterId)?.title || question.chapterId]\n` +
+`}));\n` +
 `COURSE_DATA.pageCards = ${JSON.stringify(pageCards, null, 2)};\n` +
 `COURSE_DATA.chapterSupplements = ${JSON.stringify(chapterSupplements, null, 2)};\n` +
 `for (const supplement of COURSE_DATA.chapterSupplements) {\n` +
@@ -221,7 +316,7 @@ const output = `// Generated from ${sourcePath.replace(/\\/g, "\\\\")}\n` +
 `  if (chapter) chapter.pptKeyPoints = supplement.items;\n` +
 `}\n` +
 `COURSE_DATA.calculationGuide = ${JSON.stringify(calculationGuide, null, 2)};\n` +
-`COURSE_DATA.questions.push(...${JSON.stringify(calculationQuestions, null, 2)});\n`;
+`COURSE_DATA.questions.push(...${JSON.stringify(allGeneratedQuestions, null, 2)});\n`;
 
 fs.writeFileSync(path.join(root, "site", "ppt-enrichment.js"), output, "utf8");
-console.log(`Generated ${pageCards.length} page cards and ${calculationQuestions.length} calculation questions.`);
+console.log(`Generated ${pageCards.length} page cards, ${pageCoverageQuestions.length} page questions, and ${calculationQuestions.length} calculation questions.`);
