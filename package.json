@@ -1,0 +1,10 @@
+{
+  "name": "optical-detection-review",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "validate": "node scripts/validate-data.js",
+    "smoke": "node scripts/smoke-test.js",
+    "serve": "node scripts/serve.js"
+  }
+}
