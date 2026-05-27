@@ -70,12 +70,21 @@
       <section id="overviewView" class="view active" aria-label="章节知识点">
         <div class="section-header">
           <div>
-            <h3>章节核心内容</h3>
-            <p>按章节列出核心概念、公式/数值关系和理论框架。</p>
+          <h3>章节核心内容</h3>
+          <p>按课程 PPT PDF 逐页文本整理，先看章节框架，再核对逐页覆盖卡。</p>
           </div>
           <div class="count-pill" id="chapterCount"></div>
         </div>
         <div id="chapterGrid" class="chapter-grid"></div>
+        <div id="calculationGuide" class="calculation-guide"></div>
+        <div class="section-header page-coverage-header">
+          <div>
+            <h3>逐页 PPT 覆盖卡</h3>
+            <p>对应 PDF 68 页，每页保留关键词、原页要点和考试提示。</p>
+          </div>
+          <div class="count-pill" id="pageCardCount"></div>
+        </div>
+        <div id="pageCoverage" class="page-coverage"></div>
       </section>
 
       <section id="practiceView" class="view" aria-label="交互练习">
@@ -120,6 +129,7 @@
   </div>
 
   <script src="data.js"></script>
+  <script src="ppt-enrichment.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
