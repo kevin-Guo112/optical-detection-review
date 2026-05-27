@@ -11,10 +11,12 @@ https://kevin-guo112.github.io/optical-detection-review/
 ## 内容
 
 - 8 个章节知识点卡片
-- 97 道题
+- 165 道题
 - 题型覆盖：单选、多选、填空、解答、实验
 - 额外标注 9 道“计算/公式应用”题，仍归入解答题练习
 - 68 张逐页 PPT 覆盖卡，用于核对每一页 PDF 是否复习到
+- 68/68 页 PPT 均有至少一道关联题目
+- `image_inputs/` 支持图片题导入清单；有 OCR 时可预识别，无 OCR 时进入待转写状态
 - 本地浏览器保存答题进度和错题
 
 ## 本地使用
@@ -63,6 +65,29 @@ npm.cmd run smoke
 ```
 
 校验会检查章节数、题目数量、选择题 4 个选项、答案索引、题型数量、章节引用和静态入口文件。
+
+## 图片题导入
+
+把截图或照片放入：
+
+```text
+image_inputs
+```
+
+然后运行：
+
+```powershell
+npm.cmd run import:images -- image_inputs
+```
+
+脚本会生成：
+
+```text
+image_inputs/imported-image-questions.json
+site/image-questions.js
+```
+
+当前机器没有检测到 `tesseract` OCR，引入的图片会先标记为 `needs_transcription`，需要人工补充题干、选项和标准答案后再作为正式题目。
 
 ## GitHub Pages 发布
 
