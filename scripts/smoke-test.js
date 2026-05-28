@@ -38,7 +38,7 @@ const dataSource = fs.readFileSync(path.join(site, "data.js"), "utf8");
 const sandbox = {};
 vm.createContext(sandbox);
 vm.runInContext(`${dataSource}\nthis.COURSE_DATA = COURSE_DATA;`, sandbox, { filename: "data.js" });
-assert(sandbox.COURSE_DATA.title.includes("????"), "COURSE_DATA title is unexpected.");
+assert(sandbox.COURSE_DATA.title.includes("光电检测"), "COURSE_DATA title is unexpected.");
 assert(sandbox.COURSE_DATA.questions.some((question) => question.type === "experiment"), "No experiment questions found.");
 
 for (const file of ["data.js", "app.js"]) {

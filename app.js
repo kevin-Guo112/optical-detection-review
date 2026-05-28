@@ -47,13 +47,13 @@ function setView(view) {
 function initFilters() {
   const chapterFilter = $("#chapterFilter");
   chapterFilter.innerHTML = [
-    `<option value="all">????</option>`,
+    `<option value="all">全部章节</option>`,
     ...COURSE_DATA.chapters.map((chapter) => `<option value="${chapter.id}">${chapter.title}</option>`)
   ].join("");
 
   const typeFilter = $("#typeFilter");
   typeFilter.innerHTML = [
-    `<option value="all">????</option>`,
+    `<option value="all">全部题型</option>`,
     ...Object.entries(COURSE_DATA.typeLabels).map(([value, label]) => `<option value="${value}">${label}</option>`)
   ].join("");
 
@@ -73,22 +73,22 @@ function initFilters() {
 function renderOverview() {
   $("#pageTitle").textContent = COURSE_DATA.title;
   $("#sourceText").textContent = COURSE_DATA.source;
-  $("#chapterCount").textContent = `${COURSE_DATA.chapters.length} ???`;
+  $("#chapterCount").textContent = `${COURSE_DATA.chapters.length} 个章节`;
   $("#chapterGrid").innerHTML = COURSE_DATA.chapters.map((chapter) => `
     <article class="chapter-card">
       <div class="chapter-card-header">
-        <div class="tag">${chapter.pageRange} ?</div>
+        <div class="tag">${chapter.pageRange} 页</div>
         <h4>${chapter.title}</h4>
         <p>${chapter.summary}</p>
       </div>
       <details open>
-        <summary>????</summary>
+        <summary>核心概念</summary>
         <div class="detail-body">
           <ul>${chapter.coreConcepts.map((item) => `<li>${item}</li>`).join("")}</ul>
         </div>
       </details>
       <details>
-        <summary>???????</summary>
+        <summary>公式与数值关系</summary>
         <div class="detail-body">
           ${chapter.formulas.map((formula) => `
             <div class="formula-row">
@@ -100,13 +100,13 @@ function renderOverview() {
         </div>
       </details>
       <details>
-        <summary>????</summary>
+        <summary>理论框架</summary>
         <div class="detail-body">
           <ul>${chapter.framework.map((item) => `<li>${item}</li>`).join("")}</ul>
         </div>
       </details>
       <details>
-        <summary>???</summary>
+        <summary>易错点</summary>
         <div class="detail-body">
           <ul>${chapter.pitfalls.map((item) => `<li>${item}</li>`).join("")}</ul>
         </div>
@@ -134,7 +134,7 @@ function normalize(text) {
   return String(text || "")
     .trim()
     .replace(/\s+/g, "")
-    .replace(/[?????]/g, "")
+    .replace(/[，。；：、]/g, "")
     .toLowerCase();
 }
 
@@ -177,18 +177,18 @@ function renderAnswerArea(question) {
   }
 
   if (question.type === "blank") {
-    $("#answerArea").innerHTML = `<input class="blank-input" id="blankAnswer" type="text" autocomplete="off" placeholder="???????">`;
+    $("#answerArea").innerHTML = `<input class="blank-input" id="blankAnswer" type="text" autocomplete="off" placeholder="输入答案关键词">`;
     if (saved?.value) $("#blankAnswer").value = saved.value;
     if (saved) showBlankFeedback(question, saved.correct, saved.value);
     return;
   }
 
   $("#answerArea").innerHTML = `
-    <textarea class="essay-input" id="essayAnswer" placeholder="??????????????????"></textarea>
-    <div class="self-score" aria-label="??">
-      <button type="button" data-score="correct">????</button>
-      <button type="button" data-score="partial">????</button>
-      <button type="button" data-score="incorrect">????</button>
+    <textarea class="essay-input" id="essayAnswer" placeholder="先写自己的答案，再提交查看参考答案。"></textarea>
+    <div class="self-score" aria-label="自评">
+      <button type="button" data-score="correct">自评正确</button>
+      <button type="button" data-score="partial">部分掌握</button>
+      <button type="button" data-score="incorrect">需要重练</button>
     </div>
   `;
   if (saved?.value) $("#essayAnswer").value = saved.value;
@@ -205,7 +205,7 @@ function renderAnswerArea(question) {
 
 function renderQuestionList() {
   const questions = filteredQuestions();
-  $("#filteredCount").textContent = `${questions.length} ?`;
+  $("#filteredCount").textContent = `${questions.length} 题`;
   $("#questionList").innerHTML = questions.map((question, index) => {
     const saved = state.progress.answers[question.id];
     const dotClass = saved ? (saved.correct ? "correct" : "incorrect") : "";
@@ -229,13 +229,13 @@ function renderQuestion() {
   const questions = filteredQuestions();
   const question = currentQuestion();
   renderQuestionList();
-  $("#filteredCount").textContent = `${questions.length} ?`;
+  $("#filteredCount").textContent = `${questions.length} 题`;
 
   if (!question) {
-    $("#questionType").textContent = "???";
+    $("#questionType").textContent = "无题目";
     $("#questionChapter").textContent = "";
     $("#questionProgress").textContent = "";
-    $("#questionPrompt").textContent = "????????????";
+    $("#questionPrompt").textContent = "当前筛选条件下没有题目。";
     $("#answerArea").innerHTML = "";
     $("#feedback").hidden = true;
     return;
@@ -253,14 +253,14 @@ function feedbackHtml(title, body, extra = "") {
 }
 
 function showChoiceFeedback(question, correct, value) {
-  const answerText = question.answer.map(optionLetter).join("?");
-  const chosenText = value.length ? value.map(optionLetter).join("?") : "???";
+  const answerText = question.answer.map(optionLetter).join("、");
+  const chosenText = value.length ? value.map(optionLetter).join("、") : "未选择";
   const feedback = $("#feedback");
   feedback.hidden = false;
   feedback.className = `feedback ${correct ? "correct" : "incorrect"}`;
   feedback.innerHTML = feedbackHtml(
-    correct ? "????" : "?????",
-    `?????${chosenText}??????${answerText}?${question.explanation}`
+    correct ? "回答正确" : "回答不正确",
+    `你的答案：${chosenText}；正确答案：${answerText}。${question.explanation}`
   );
 }
 
@@ -269,8 +269,8 @@ function showBlankFeedback(question, correct, value) {
   feedback.hidden = false;
   feedback.className = `feedback ${correct ? "correct" : "incorrect"}`;
   feedback.innerHTML = feedbackHtml(
-    correct ? "????" : "????",
-    `?????${value || "???"}??????${question.answer.join(" / ")}?${question.explanation}`
+    correct ? "回答正确" : "需要订正",
+    `你的答案：${value || "未填写"}；参考答案：${question.answer.join(" / ")}。${question.explanation}`
   );
 }
 
@@ -281,8 +281,8 @@ function showEssayFeedback(question, score) {
   feedback.hidden = false;
   feedback.className = `feedback ${correct ? "correct" : partial ? "neutral" : "incorrect"}`;
   feedback.innerHTML = feedbackHtml(
-    correct ? "????" : partial ? "????" : "????",
-    `<strong>?????</strong>${question.answer}<br><strong>???</strong>${question.explanation}`,
+    correct ? "自评正确" : partial ? "部分掌握" : "需要重练",
+    `<strong>参考答案：</strong>${question.answer}<br><strong>解析：</strong>${question.explanation}`,
     `<ul class="rubric-list">${question.rubric.map((item) => `<li>${item}</li>`).join("")}</ul>`
   );
 }
@@ -352,7 +352,7 @@ function renderMistakes() {
   const mistakeIds = new Set(Object.keys(state.progress.mistakes));
   const mistakes = COURSE_DATA.questions.filter((question) => mistakeIds.has(question.id));
   if (!mistakes.length) {
-    $("#mistakeList").innerHTML = `<div class="empty-state">???????????????????????/??????????????</div>`;
+    $("#mistakeList").innerHTML = `<div class="empty-state">还没有错题。练习时答错或主观题标记为“部分掌握/需要重练”后，会出现在这里。</div>`;
     return;
   }
   $("#mistakeList").innerHTML = mistakes.map((question) => `
@@ -362,9 +362,9 @@ function renderMistakes() {
         <span>${getChapter(question.chapterId).title}</span>
       </div>
       <h4>${question.prompt}</h4>
-      <p><strong>?????</strong>${formatAnswer(question)}</p>
-      <p><strong>???</strong>${question.explanation}</p>
-      <button class="ghost-button" type="button" data-review="${question.id}">????</button>
+      <p><strong>参考答案：</strong>${formatAnswer(question)}</p>
+      <p><strong>解析：</strong>${question.explanation}</p>
+      <button class="ghost-button" type="button" data-review="${question.id}">去练这题</button>
     </article>
   `).join("");
   $$("[data-review]").forEach((button) => {
@@ -383,7 +383,7 @@ function renderMistakes() {
 
 function formatAnswer(question) {
   if (question.type === "single" || question.type === "multiple") {
-    return question.answer.map((index) => `${optionLetter(index)}. ${question.options[index]}`).join("?");
+    return question.answer.map((index) => `${optionLetter(index)}. ${question.options[index]}`).join("；");
   }
   if (question.type === "blank") return question.answer.join(" / ");
   return question.answer;
@@ -418,7 +418,7 @@ function bindEvents() {
     renderQuestion();
   });
   $("#resetProgressButton").addEventListener("click", () => {
-    if (!confirm("?????????????")) return;
+    if (!confirm("确定要重置全部练习进度吗？")) return;
     state.progress = { answers: {}, mistakes: {} };
     saveProgress();
     renderAll();
